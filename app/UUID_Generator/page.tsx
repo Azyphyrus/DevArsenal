@@ -4,6 +4,7 @@ import { useState } from "react"
 import Sidebar from "@/components/Sidebar"
 import Header from "@/components/Header"
 import { v1 as uuidv1, v4 as uuidv4, v7 as uuidv7 } from "uuid"
+import { useSidebar } from "@/lib/SidebarContext";
 
 export default function UUID_Generator() {
 
@@ -37,12 +38,14 @@ export default function UUID_Generator() {
     setUuids([])
   }
 
+  const { isOpen } = useSidebar();
+
   return (
     <div className="min-h-screen bg-[#1a1a1a] text-white font-sans">
 
       <Sidebar />
 
-      <div className="flex-1 ml-60 transition-all duration-300">
+      <div className="flex-1 transition-all duration-300" style={{paddingLeft: isOpen ? '240px' : '80px'}}>
         <Header />
 
         <main className="p-8 space-y-6">

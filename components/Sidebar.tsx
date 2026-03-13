@@ -9,7 +9,7 @@ const Sidebar = () => {
   const { isOpen, toggle } = useSidebar();
   
   return (
-    <aside className={`fixed left-0 top-0 h-screen bg-gradient-to-b from-[#1a1a1a] to-[#0f0f0f] border-r border-[#2a2a2a] flex flex-col z-40 transition-all duration-300 ${isOpen ? 'w-60' : 'w-20'}`}>
+    <aside className={`fixed left-0 top-0 h-screen bg-linear-to-b from-[#1a1a1a] to-[#0f0f0f] border-r border-[#2a2a2a] flex flex-col z-40 transition-all duration-300 ${isOpen ? 'w-60' : 'w-20'}`}>
       {/* Header */}
       <div className={`p-6 border-b border-[#2a2a2a] flex items-center ${isOpen ? 'justify-between' : 'justify-center'}`}>
         <div className={`flex items-center ${isOpen ? 'gap-3' : 'justify-center'}`}>

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react"
 import Sidebar from "@/components/Sidebar"
 import Header from "@/components/Header"
 import Editor from "@monaco-editor/react"
+import { useSidebar } from "@/lib/SidebarContext";
 
 interface Snippet {
   id: string
@@ -97,12 +98,14 @@ export default function Code_Snippet_Manager() {
       }
     }
 
+  const { isOpen } = useSidebar();
+
   return (
     <div className="min-h-screen bg-[#1a1a1a] text-white font-sans">
 
       <Sidebar />
 
-      <div className="flex-1 ml-60 transition-all duration-300">
+      <div className="flex-1 transition-all duration-300" style={{paddingLeft: isOpen ? '240px' : '80px'}}>
 
         <Header />
 
@@ -140,7 +143,7 @@ export default function Code_Snippet_Manager() {
                     {/* Delete button: always visible */}
                     <button
                       onClick={() => deleteSnippet(snippet.id)}
-                      className="flex-shrink-0 text-red-500 px-2 py-1 rounded cursor-pointer
+                      className="shrink-0 text-red-500 px-2 py-1 rounded cursor-pointer
                                 hover:bg-red-600 hover:text-white
                                 active:scale-95 transition-all duration-150 ease-in-out"
                       title="Delete snippet"

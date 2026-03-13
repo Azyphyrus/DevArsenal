@@ -3,6 +3,7 @@
 import { useState } from "react"
 import Sidebar from "@/components/Sidebar"
 import Header from "@/components/Header"
+import { useSidebar } from "@/lib/SidebarContext";
 
 export default function Base64_Encoder() {
 
@@ -65,13 +66,14 @@ export default function Base64_Encoder() {
     setOutput("")
     setImagePreview(null)
   }
+  const { isOpen } = useSidebar();
 
   return (
     <div className="min-h-screen bg-[#1a1a1a] text-white font-sans">
 
       <Sidebar />
 
-      <div className="flex-1 ml-60 transition-all duration-300">
+      <div className="flex-1 transition-all duration-300" style={{paddingLeft: isOpen ? '240px' : '80px'}}>
         <Header />
 
         <main className="p-8 space-y-6">

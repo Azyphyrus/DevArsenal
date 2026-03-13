@@ -18,6 +18,10 @@ const tools = [
   { icon: PiPlaceholder, title: "lorem ipsum", description: "lorem ipsum" },
   { icon: LuBarcode, title: "UUID Generator", description: "Quickly and easily generate individual or bulk sets of universally unique identifiers (UUIDs)." },
   { icon: PiHashStraightFill, title: "Hash Generator", description: "Generate MD5, SHA-1, SHA-256, and other hash algorithms" },
+  { icon: PiPlaceholder, title: "lorem ipsum", description: "lorem ipsum" },
+  { icon: PiPlaceholder, title: "lorem ipsum", description: "lorem ipsum" },
+  { icon: PiPlaceholder, title: "lorem ipsum", description: "lorem ipsum" },
+  { icon: PiPlaceholder, title: "lorem ipsum", description: "lorem ipsum" },
 ];
 
 export default function Dashboard() {
