@@ -2,14 +2,21 @@
 import Sidebar from "@/components/Sidebar";
 import Header from "@/components/Header";
 import ToolCard from "@/components/ToolCard";
-import { RiLockLine, RiLink, RiKey2Line, RiCodeView } from "react-icons/ri";
+import { RiLink, RiCodeView } from "react-icons/ri";
+import { PiPlaceholder, PiHashStraightFill } from "react-icons/pi";
+import { LuFileJson, LuBarcode } from "react-icons/lu";
+import { TbNumber64Small } from "react-icons/tb";
 import { Footer } from "@/components/Footer";
 
 const tools = [
-  { icon: RiLockLine, title: "Base64 Encoder", description: "Encode and decode Base64 strings with ease" },
-  { icon: RiLink, title: "URL Encoder", description: "Encode URLs and query parameters safely" },
+  { icon: TbNumber64Small, title: "Base64 Encoder", description: "Encode and Decode and decode Base64 strings with ease" },
+  { icon: RiLink, title: "URL Encoder", description: "Encode and Decode URLs and query parameters safely" },
   { icon: RiCodeView, title: "Code Snippet Manager", description: "Encode HTML entities and special characters" },
-  { icon: RiKey2Line, title: "JSON Formatter", description: "Format and validate JSON Data" },
+  { icon: LuFileJson, title: "JSON Formatter", description: "Format and validate JSON Data" },
+  { icon: PiPlaceholder, title: "lorem ipsum", description: "lorem ipsum" },
+  { icon: PiPlaceholder, title: "lorem ipsum", description: "lorem ipsum" },
+  { icon: LuBarcode, title: "UUID Generator", description: "Quickly and easily generate individual or bulk sets of universally unique identifiers (UUIDs)." },
+  { icon: PiHashStraightFill, title: "Hash Generator", description: "Generate MD5, SHA-1, SHA-256, and other hash algorithms" },
 ];
 
 export default function Dashboard() {
