@@ -55,7 +55,7 @@ export default function FeaturesSection() {
           <h2 className="text-4xl md:text-5xl font-extrabold mt-3 mb-4">
             Built for how developers
             <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00d9ff] to-[#00ff88]">
+            <span className="text-transparent bg-clip-text bg-linear-to-r from-[#00d9ff] to-[#00ff88]">
               actually work
             </span>
           </h2>
@@ -71,7 +71,7 @@ export default function FeaturesSection() {
               className="bg-[#141414] border border-[#222222] rounded-xl p-7 hover:border-[#333333] hover:bg-[#181818] transition-all duration-250 group"
             >
               <div
-                className={`w-12 h-12 rounded-lg bg-gradient-to-br ${feature.gradient} flex items-center justify-center mb-5`}
+                className={`w-12 h-12 rounded-lg bg-linear-to-br ${feature.gradient} flex items-center justify-center mb-5`}
               >
                 <i className={`${feature.icon} text-2xl text-white`}></i>
               </div>

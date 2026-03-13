@@ -10,7 +10,7 @@ export default function HeroSection() {
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
       <div className="absolute inset-0">
         <Image
-          src=""
+          src="/images/landpage-bg.png"
           alt="Hero background"
           className="w-full h-full object-cover object-top"
           fill
@@ -44,7 +44,7 @@ export default function HeroSection() {
         <h1 className="text-6xl md:text-7xl font-extrabold leading-tight mb-6 tracking-tight">
           Every Dev Tool
           <br />
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00d9ff] to-[#00ff88]">
+          <span className="text-transparent bg-clip-text bg-linear-to-r from-[#00d9ff] to-[#00ff88]">
             In One Place
           </span>
         </h1>
