@@ -7,6 +7,7 @@ import { PiPlaceholder, PiHashStraightFill } from "react-icons/pi";
 import { LuFileJson, LuBarcode } from "react-icons/lu";
 import { TbNumber64Small } from "react-icons/tb";
 import { Footer } from "@/components/Footer";
+import { useSidebar } from "@/lib/SidebarContext";
 
 const tools = [
   { icon: TbNumber64Small, title: "Base64 Encoder", description: "Encode and Decode and decode Base64 strings with ease" },
@@ -20,6 +21,8 @@ const tools = [
 ];
 
 export default function Dashboard() {
+
+  const { isOpen } = useSidebar();
     
   return (
     <div className="min-h-screen bg-[#1a1a1a] text-white font-sans">
@@ -29,7 +32,7 @@ export default function Dashboard() {
       <div>
       <Sidebar />
       </div>
-      <div className="flex-1 transition-all duration-300">
+      <div className="flex-1 transition-all duration-300" style={{paddingLeft: isOpen ? '240px' : '80px'}}>
         <Header />
         <main className="p-8">
           <div className="relative h-44 rounded-xl overflow-hidden mb-8 bg-linear-to-r from-[#2d1b4e] via-[#1e2a4a] to-[#1a2332]">

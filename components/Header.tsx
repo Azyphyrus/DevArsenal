@@ -5,9 +5,6 @@ const Header = () => {
   return (
     <header className="sticky top-0 h-16 bg-[#1a1a1a]/95 backdrop-blur-sm border-b border-[#2a2a2a] z-30 flex items-center justify-between px-6">
       <div className="flex items-center gap-4">
-        <button className="w-8 h-8 flex items-center justify-center text-[#8a8a8a] hover:text-white">
-          <RiMenuLine className="text-xl" />
-        </button>
 
         <div className="relative w-96">
           <input
