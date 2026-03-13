@@ -174,8 +174,6 @@ export default function JSON_Formatter() {
   return (
     <div className="min-h-screen bg-[#1a1a1a] text-white font-sans">
 
-      <div className="h-1 w-full bg-[#00ff88] animate-pulse"></div>
-
       <Sidebar />
 
       <div className="flex-1 ml-60 transition-all duration-300">
