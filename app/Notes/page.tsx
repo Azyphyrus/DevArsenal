@@ -154,16 +154,15 @@ export default function Notepad_Gallery() {
             </div>
 
             {/* Preview blocks */}
-            <div className="flex flex-col gap-2">
-              {blocks.map((b, i) =>
-                b.type === 'text' ? (
-                  <p key={i} className="text-gray-300">{b.content}</p>
-                ) : (
-                  <img key={i} src={b.src} className="max-h-32 rounded border border-[#2a2a2a]" />
-                )
-              )}
-            </div>
-
+        <div className="flex flex-col gap-2 max-h-48 overflow-y-auto p-2 bg-[#1a1a1a] border border-[#2a2a2a] rounded">
+        {blocks.map((b, i) =>
+            b.type === 'text' ? (
+            <p key={i} className="text-gray-300 whitespace-pre-wrap">{b.content}</p>
+            ) : (
+            <img key={i} src={b.src} className="max-h-32 rounded border border-[#2a2a2a]" />
+            )
+        )}
+        </div>
           </div>
 
           {/* Notes Gallery */}
@@ -197,28 +196,34 @@ export default function Notepad_Gallery() {
           </div>
 
           {/* Modal */}
-          {showModal && selectedNote && (
-            <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-6">
-              <div className="bg-[#111] border border-[#2a2a2a] rounded-lg p-6 max-w-lg w-full space-y-4">
-                <h2 className="text-xl font-bold">{selectedNote.title}</h2>
-                <div className="flex flex-col gap-2">
-                  {selectedNote.blocks.map((b, i) =>
-                    b.type === 'text' ? (
-                      <p key={i} className="text-gray-300 whitespace-pre-wrap">{b.content}</p>
-                    ) : (
-                      <img key={i} src={b.src} className="rounded border border-[#2a2a2a]" />
-                    )
-                  )}
-                </div>
+            {showModal && selectedNote && (
+            <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-6 z-50 overflow-auto">
+
+                <div className="relative bg-[#111] border border-[#2a2a2a] rounded-lg p-6 max-w-lg w-full max-h-[90vh] overflow-y-auto space-y-4">
+
+                {/* Floating X button */}
                 <button
-                  onClick={() => setShowModal(false)}
-                  className="px-4 py-2 bg-[#2a2a2a] rounded hover:bg-[#3a3a3a]"
+                    onClick={() => setShowModal(false)}
+                    className="sticky top-0 right-0 ml-auto mb-2 text-white bg-[#2a2a2a] hover:bg-[#3a3a3a] rounded px-3 py-1 text-sm float-right z-10"
                 >
-                  Close
+                    ×
                 </button>
-              </div>
+
+                <h2 className="text-xl font-bold">{selectedNote.title}</h2>
+
+                <div className="flex flex-col gap-2">
+                    {selectedNote.blocks.map((b, i) =>
+                    b.type === 'text' ? (
+                        <p key={i} className="text-gray-300 whitespace-pre-wrap">{b.content}</p>
+                    ) : (
+                        <img key={i} src={b.src} className="rounded border border-[#2a2a2a]" />
+                    )
+                    )}
+                </div>
+
+                </div>
             </div>
-          )}
+            )}
 
         </main>
       </div>
