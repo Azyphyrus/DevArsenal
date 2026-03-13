@@ -4,7 +4,7 @@ import Header from "@/components/Header";
 import ToolCard from "@/components/ToolCard";
 import { RiLink, RiCodeView } from "react-icons/ri";
 import { PiPlaceholder, PiHashStraightFill } from "react-icons/pi";
-import { LuFileJson, LuBarcode } from "react-icons/lu";
+import { LuFileJson, LuBarcode, LuClipboardList } from "react-icons/lu";
 import { TbNumber64Small, TbNotes } from "react-icons/tb";
 import { Footer } from "@/components/Footer";
 import { useSidebar } from "@/lib/SidebarContext";
@@ -14,7 +14,7 @@ const tools = [
   { icon: RiLink, title: "URL Encoder", description: "Encode and Decode URLs and query parameters safely" },
   { icon: RiCodeView, title: "Code Snippet Manager", description: "Encode HTML entities and special characters" },
   { icon: LuFileJson, title: "JSON Formatter", description: "Format and validate JSON Data" },
-  { icon: PiPlaceholder, title: "Task Board", description: "lorem ipsum" },
+  { icon: LuClipboardList, title: "Task Board", description: "Task management tool used to track work-in-progress." },
   { icon: TbNotes, title: "Notes", description: "Write down and save quick notes" },
   { icon: LuBarcode, title: "UUID Generator", description: "Quickly and easily generate individual or bulk sets of universally unique identifiers (UUIDs)." },
   { icon: PiHashStraightFill, title: "Hash Generator", description: "Generate MD5, SHA-1, SHA-256, and other hash algorithms" },
