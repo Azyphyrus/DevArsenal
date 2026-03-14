@@ -79,9 +79,8 @@ export default function Dashboard() {
           </div>
 
         </main>
-
-      </div>
         <Footer />
+      </div>
     </div>
   );
 }
