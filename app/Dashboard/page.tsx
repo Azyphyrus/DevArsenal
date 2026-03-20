@@ -5,7 +5,7 @@ import ToolCard from "@/components/ToolCard";
 import { RiLink, RiCodeView } from "react-icons/ri";
 import { PiPlaceholder, PiHashStraightFill } from "react-icons/pi";
 import { LuFileJson, LuBarcode, LuClipboardList } from "react-icons/lu";
-import { TbNumber64Small, TbNotes } from "react-icons/tb";
+import { TbNumber64Small, TbNotes, TbRegex, TbApi, TbShape } from "react-icons/tb";
 import { Footer } from "@/components/Footer";
 import { useSidebar } from "@/lib/SidebarContext";
 
@@ -18,9 +18,9 @@ const tools = [
   { icon: TbNotes, title: "Notes", description: "Write down and save quick notes" },
   { icon: LuBarcode, title: "UUID Generator", description: "Quickly and easily generate individual or bulk sets of universally unique identifiers (UUIDs)." },
   { icon: PiHashStraightFill, title: "Hash Generator", description: "Generate MD5, SHA-1, SHA-256, and other hash algorithms" },
-  { icon: PiPlaceholder, title: "lorem ipsum", description: "lorem ipsum" },
-  { icon: PiPlaceholder, title: "lorem ipsum", description: "lorem ipsum" },
-  { icon: PiPlaceholder, title: "lorem ipsum", description: "lorem ipsum" },
+  { icon: TbRegex, title: "Regex Tester", description: "A lightweight and interactive tool to test regular expressions in real-time." },
+  { icon: TbApi, title: "API Tester", description: "Test your APIs instantly with GET, POST, PUT, DELETE requests." },
+  { icon: TbShape, title: "Visual Tool", description: "Create, draw, and collaborate visually with an intuitive canvas." },
   { icon: PiPlaceholder, title: "lorem ipsum", description: "lorem ipsum" },
 ];
 
