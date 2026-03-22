@@ -43,7 +43,7 @@ export default function Dashboard() {
             <div className="absolute inset-0 bg-linear-to-b from-black/20 via-black/10 to-black/20"></div>
             <div className="relative h-full flex items-center justify-between px-8">
               <div className="z-10">
-                <h1 className="text-3xl font-bold mb-2">Welcome back, Developer</h1>
+                <h1 className="text-3xl font-bold mb-2">Welcome back, {localStorage.getItem("developerName") || "Developer"}</h1>
                 <p className="text-[#aaaaaa] text-sm">Last login: Jan 1, 12:00 AM</p>
                 <div className="flex gap-4 mt-6">
                 {/*                */}

@@ -7,7 +7,7 @@ const SidebarContext = createContext<{
 }>({ isOpen: true, toggle: () => {} });
 
 export const SidebarProvider = ({ children }: { children: React.ReactNode }) => {
-  const [isOpen, setIsOpen] = useState(true);
+  const [isOpen, setIsOpen] = useState(false);
   return (
     <SidebarContext.Provider value={{ isOpen, toggle: () => setIsOpen(!isOpen) }}>
       {children}

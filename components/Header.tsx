@@ -1,7 +1,17 @@
-import React from "react";
-import { RiMenuLine, RiMore2Fill } from "react-icons/ri";
+'use client'
+import { RiMore2Fill } from "react-icons/ri";
+import React, { useState, useEffect } from "react";
 
 const Header = () => {
+    const [developerName, setDeveloperName] = useState("");
+
+  useEffect(() => {
+    const savedName = localStorage.getItem("developerName") || "Developer";
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setDeveloperName(savedName);
+  }, []);
+
+  const firstLetter = developerName ? developerName[0].toUpperCase() : "D";
   return (
     <header className="sticky top-0 h-16 bg-[#1a1a1a]/95 backdrop-blur-sm border-b border-[#2a2a2a] z-30 flex items-center justify-between px-6">
       <div className="flex items-center gap-4">
@@ -24,9 +34,8 @@ const Header = () => {
         </button>
         <div className="relative">
           <div className="w-8 h-8 rounded-full bg-linear-to-br from-[#00d9ff] to-[#00ff88] flex items-center justify-center cursor-pointer">
-            <span className="text-sm font-semibold text-[#1a1a1a]">D</span>
+            <span className="text-sm font-semibold text-[#1a1a1a]">{firstLetter}</span>
           </div>
-          <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-[#00ff88] rounded-full border-2 border-[#1a1a1a]"></div>
         </div>
       </div>
     </header>

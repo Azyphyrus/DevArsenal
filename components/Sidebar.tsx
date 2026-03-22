@@ -1,5 +1,5 @@
 'use client'
-import React from "react";
+//import React from "react";
 import { useRouter } from 'next/navigation'
 import { RiDashboardLine, RiLockLine, RiMagicLine, RiExchangeLine, RiCheckboxCircleLine, RiCodeLine, RiGlobalLine, RiSettings3Line, RiMenuLine } from "react-icons/ri";
 import { useSidebar } from "@/lib/SidebarContext";
@@ -59,7 +59,9 @@ const Sidebar = () => {
 
       {/* Footer */}
       <div className={`p-4 border-t border-[#2a2a2a] flex ${isOpen ? 'justify-start' : 'justify-center'}`}>
-        <button className={`flex items-center gap-3 text-[#8a8a8a] hover:bg-[#252525] hover:text-white transition-all rounded-lg group relative ${
+        <button 
+        onClick={() => router.push('/Settings')} 
+        className={`flex items-center gap-3 text-[#8a8a8a] hover:bg-[#252525] hover:text-white transition-all rounded-lg group relative ${
           isOpen 
             ? 'w-full px-4 py-3' 
             : 'w-12 h-12 justify-center'
