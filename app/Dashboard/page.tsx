@@ -36,6 +36,7 @@ const tools = [
 
 export default function Dashboard() {
 
+  const [devName, setDevName] = useState("Developer");
   const { isOpen } = useSidebar();
   const [exportCode, setExportCode] = useState(null);
   const [isExporting, setIsExporting] = useState(false);
@@ -126,6 +127,12 @@ export default function Dashboard() {
 
   const [lastLogin, setLastLogin] = useState("First time visiting");
   useEffect(() => {
+
+    const savedName = localStorage.getItem("developerName");
+    if (savedName) {
+      setDevName(savedName);
+    }
+
     const savedDisplayTime = localStorage.getItem("last_login_display"); // e.g., "Mar 23, 1:42 AM"
     const savedDateKey = localStorage.getItem("last_login_date_key");   // e.g., "2026-03-23"
 
@@ -153,7 +160,6 @@ export default function Dashboard() {
     }
   }, []);
 
-
   return (
     <div className="min-h-screen bg-[#1a1a1a] text-white font-sans">
       {/*
@@ -169,7 +175,7 @@ export default function Dashboard() {
             <div className="absolute inset-0 bg-linear-to-b from-black/20 via-black/10 to-black/20"></div>
             <div className="relative h-full flex items-center justify-between px-8">
               <div className="z-10">
-                <h1 className="text-3xl font-bold mb-2">Welcome back, {localStorage.getItem("developerName") || "Developer"}</h1>
+                <h1 className="text-3xl font-bold mb-2">Welcome back, {devName}</h1>
                 <p className="text-[#aaaaaa] text-sm">Last login: {lastLogin}</p>
                 <div className="flex gap-4 mt-6">
                 {/*                */}
