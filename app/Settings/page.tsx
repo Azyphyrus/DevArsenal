@@ -1,24 +1,45 @@
 'use client'
-import { useState, useEffect } from "react";
+import { useState} from "react";
 import Sidebar from "@/components/Sidebar";
 import Header from "@/components/Header";
 import { useRouter } from 'next/navigation'
 
 export default function Settings() {
   const router = useRouter();
-  const [name, setName] = useState("");
 
-  // Load existing name from localStorage on mount
-  useEffect(() => {
-    const savedName = localStorage.getItem("developerName") || "";
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setName(savedName);
-  }, []);
+  // 1. Define a helper or just do it inline
+  const [offlineEnabled, setOfflineEnabled] = useState(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("offlineMode") === "true";
+    }
+    return false; // Default for SSR
+  });
+
+  const [name, setName] = useState(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("developerName") || "";
+    }
+    return "";
+  });
 
   const handleSave = () => {
     localStorage.setItem("developerName", name.trim());
     alert("Profile saved!");
   };
+
+    const toggleOffline = () => {
+    const newValue = !offlineEnabled;
+    setOfflineEnabled(newValue);
+    localStorage.setItem("offlineMode", String(newValue));
+  };
+
+//  const clearOfflineData = async () => {
+//  if ('caches' in window) {
+//    const keys = await caches.keys();
+//    await Promise.all(keys.map((key) => caches.delete(key)));
+//  }
+//  alert("Offline data cleared!");
+//};
 
   return (
     <div className="min-h-screen bg-[#1a1a1a] text-white font-sans">
@@ -48,6 +69,18 @@ export default function Settings() {
               Save Profile
             </button>
           </div>
+
+        <div className="mt-6">
+          <label className="flex items-center gap-3 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={offlineEnabled}
+              onChange={toggleOffline}
+            />
+            <span>Enable Offline Mode</span>
+          </label>
+        </div>
+
         </main>
       </div>
     </div>

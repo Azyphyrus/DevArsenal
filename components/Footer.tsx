@@ -61,11 +61,11 @@ export const Footer: React.FC = () => {
   return (
     <footer className="bg-[#1a1a1a] border-t border-white">
       {/* Main Footer Content */}
-      <div className="mx-auto px-6 lg:py-20 px-40">
+      <div className="mx-auto lg:py-20 px-40">
         {/* Logo & Tagline */}
         <div className="mb-16 pb-12 border-b border-[#1a1a1a]">
           <div className="flex items-center gap-3 mb-3">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#00d9ff] to-[#0099cc] flex items-center justify-center">
+            <div className="w-8 h-8 rounded-lg bg-linear-to-br from-[#00d9ff] to-[#0099cc] flex items-center justify-center">
               <span className="text-white font-bold text-sm">DT</span>
             </div>
             <span className="text-white font-bold text-xl tracking-tight">

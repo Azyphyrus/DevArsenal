@@ -10,7 +10,7 @@ export default function HeroSection() {
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
       <div className="absolute inset-0">
         <Image
-          src=""
+          src="/images/herobg.png"
           alt="Hero background"
           className="w-full h-full object-cover object-top"
           fill
