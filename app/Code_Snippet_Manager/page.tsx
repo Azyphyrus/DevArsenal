@@ -1,39 +1,23 @@
 'use client'
 
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import Sidebar from "@/components/Sidebar"
 import Header from "@/components/Header"
 import Editor from "@monaco-editor/react"
 import { useSidebar } from "@/lib/SidebarContext";
-
-interface Snippet {
-  id: string
-  title: string
-  language: string
-  code: string
-}
+import { snippetStore } from "@/lib/localStorage";
+import { useSyncedCollection } from "@/lib/useSyncedState";
+import { Snippet } from "@/lib/types";
+import SyncButton from "@/components/SyncButton";
 
 export default function Code_Snippet_Manager() {
 
-  const [snippets, setSnippets] = useState<Snippet[]>([])
+  const [snippets, setSnippets] = useSyncedCollection(snippetStore);
 
   const [title, setTitle] = useState("")
   const [language, setLanguage] = useState("javascript")
   const [code, setCode] = useState("")
   const [editingId, setEditingId] = useState<string | null>(null)
-
-  // Load snippets from localStorage
-  useEffect(() => {
-    if (typeof window === "undefined") return
-
-    const stored = localStorage.getItem("devtools_snippets")
-    if (!stored) return
-
-    // Defer setState to avoid cascading render warning
-    requestAnimationFrame(() => {
-      setSnippets(JSON.parse(stored))
-    })
-  }, [])
 
   // Save snippets
     const [toast, setToast] = useState<string | null>(null)
@@ -42,25 +26,24 @@ export default function Code_Snippet_Manager() {
       if (!title.trim()) return
 
       const existingIndex = snippets.findIndex(s => s.id === editingId)
+      const now = new Date().toISOString()
       let updatedSnippets: Snippet[]
 
       if (existingIndex > -1) {
         updatedSnippets = [...snippets]
-        updatedSnippets[existingIndex] = { id: editingId!, title, language, code }
+        updatedSnippets[existingIndex] = { ...updatedSnippets[existingIndex], title, language, code, updatedAt: now }
       } else {
         const newSnippet: Snippet = {
-          id: Date.now().toString(),
+          id: crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(),
           title,
           language,
-          code
+          code,
+          updatedAt: now,
         }
         updatedSnippets = [...snippets, newSnippet]
       }
 
       setSnippets(updatedSnippets)
-      if (typeof window !== "undefined") {
-        localStorage.setItem("devtools_snippets", JSON.stringify(updatedSnippets))
-      }
 
       // Reset editor
       setTitle("")
@@ -93,9 +76,6 @@ export default function Code_Snippet_Manager() {
 
       const updated = snippets.filter(s => s.id !== id)
       setSnippets(updated)
-      if (typeof window !== "undefined") {
-        localStorage.setItem("devtools_snippets", JSON.stringify(updated))
-      }
     }
 
   const { isOpen } = useSidebar();
@@ -111,7 +91,10 @@ export default function Code_Snippet_Manager() {
 
         <main className="p-8 space-y-6">
 
-          <h1 className="text-2xl font-bold">Code Snippet Manager</h1>
+          <div className="flex items-center justify-between gap-4 flex-wrap">
+            <h1 className="text-2xl font-bold">Code Snippet Manager</h1>
+            <SyncButton variant="compact" />
+          </div>
 
           <div className="flex gap-4">
 

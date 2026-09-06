@@ -1,17 +1,22 @@
 'use client'
-import { RiMore2Fill } from "react-icons/ri";
-import React, { useState, useEffect } from "react";
+import { RiMore2Fill, RiLogoutBoxLine } from "react-icons/ri";
+import React, { useState } from "react";
+import Link from "next/link";
+import { useAuth } from "@/lib/AuthContext";
+import SyncIndicator from "./SyncIndicator";
 
 const Header = () => {
-    const [developerName, setDeveloperName] = useState("");
+    const { user, loading, logout } = useAuth();
+    const [menuOpen, setMenuOpen] = useState(false);
 
-  useEffect(() => {
-    const savedName = localStorage.getItem("developerName") || "Developer";
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setDeveloperName(savedName);
-  }, []);
+  const displayName = user?.name || "Developer";
+  const firstLetter = displayName[0].toUpperCase();
 
-  const firstLetter = developerName ? developerName[0].toUpperCase() : "D";
+  const handleLogout = async () => {
+    await logout();
+    window.location.href = "/";
+  };
+
   return (
     <header className="sticky top-0 h-16 bg-[#1a1a1a]/95 backdrop-blur-sm border-b border-[#2a2a2a] z-30 flex items-center justify-between px-6">
       <div className="flex items-center gap-4">
@@ -29,14 +34,45 @@ const Header = () => {
       </div>
 
       <div className="flex items-center gap-4">
+        <SyncIndicator />
+
         <button className="w-10 h-10 flex items-center justify-center text-[#8a8a8a] hover:text-white">
           <RiMore2Fill className="text-xl" />
         </button>
-        <div className="relative">
-          <div className="w-8 h-8 rounded-full bg-linear-to-br from-[#00d9ff] to-[#00ff88] flex items-center justify-center cursor-pointer">
-            <span className="text-sm font-semibold text-[#1a1a1a]">{firstLetter}</span>
+
+        {!loading && (user ? (
+          <div className="relative">
+            <div
+              className="w-8 h-8 rounded-full bg-linear-to-br from-[#00d9ff] to-[#00ff88] flex items-center justify-center cursor-pointer"
+              onClick={() => setMenuOpen((open) => !open)}
+            >
+              <span className="text-sm font-semibold text-[#1a1a1a]">{firstLetter}</span>
+            </div>
+
+            {menuOpen && (
+              <div className="absolute right-0 mt-2 w-56 bg-[#252525] border border-[#333333] rounded-lg shadow-xl overflow-hidden">
+                <div className="px-4 py-3 border-b border-[#333333]">
+                  <p className="text-sm font-semibold truncate">{displayName}</p>
+                  <p className="text-xs text-[#8a8a8a] truncate">{user.email}</p>
+                </div>
+                <button
+                  onClick={handleLogout}
+                  className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-red-400 hover:bg-[#2e2e2e] transition-colors"
+                >
+                  <RiLogoutBoxLine className="text-base" />
+                  Sign out
+                </button>
+              </div>
+            )}
           </div>
-        </div>
+        ) : (
+          <Link
+            href="/login"
+            className="h-9 px-4 rounded-lg bg-[#00d9ff] text-[#1a1a1a] text-sm font-semibold flex items-center hover:bg-[#00c4ea] transition-colors"
+          >
+            Sign in
+          </Link>
+        ))}
       </div>
     </header>
   );

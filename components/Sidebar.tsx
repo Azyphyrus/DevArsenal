@@ -1,7 +1,7 @@
 'use client'
 //import React from "react";
 import { useRouter } from 'next/navigation'
-import { RiDashboardLine, RiLockLine, RiMagicLine, RiExchangeLine, RiCheckboxCircleLine, RiCodeLine, RiGlobalLine, RiSettings3Line, RiMenuLine } from "react-icons/ri";
+import { RiDashboardLine, RiLockLine, RiMagicLine, RiExchangeLine, RiCheckboxCircleLine, RiCodeLine, RiGlobalLine, RiMenuLine } from "react-icons/ri";
 import { useSidebar } from "@/lib/SidebarContext";
 
 const Sidebar = () => {
@@ -56,21 +56,6 @@ const Sidebar = () => {
           </button>
         ))}
       </nav>
-
-      {/* Footer */}
-      <div className={`p-4 border-t border-[#2a2a2a] flex ${isOpen ? 'justify-start' : 'justify-center'}`}>
-        <button 
-        onClick={() => router.push('/Settings')} 
-        className={`flex items-center gap-3 text-[#8a8a8a] hover:bg-[#252525] hover:text-white transition-all rounded-lg group relative ${
-          isOpen 
-            ? 'w-full px-4 py-3' 
-            : 'w-12 h-12 justify-center'
-        }`}>
-          <RiSettings3Line className="text-xl w-6 h-6 flex-shrink-0" />
-          {isOpen && <span className="text-sm">Settings</span>}
-          {!isOpen && <div className="hidden group-hover:block absolute left-20 bg-[#252525] px-3 py-1 rounded text-xs whitespace-nowrap text-white z-50">Settings</div>}
-        </button>
-      </div>
     </aside>
   );
 };

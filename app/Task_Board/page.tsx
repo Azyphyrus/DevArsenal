@@ -1,34 +1,22 @@
 'use client'
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Sidebar from "@/components/Sidebar";
 import Header from "@/components/Header";
 import { useSidebar } from "@/lib/SidebarContext";
 import { DragDropContext, Droppable, Draggable, DropResult } from "@hello-pangea/dnd";
-
-// Task type
-interface Task {
-  id: string;
-  title: string;
-  description: string;
-  createdAt: string;
-  deadline: string;
-  status: "Backlog" | "In Progress" | "Review" | "Done";
-}
+import { taskStore } from "@/lib/localStorage";
+import { useSyncedCollection } from "@/lib/useSyncedState";
+import { Task } from "@/lib/types";
+import SyncButton from "@/components/SyncButton";
 
 const statuses: Task['status'][] = ["Backlog", "In Progress", "Review", "Done"];
 
 export default function TaskBoard() {
   const { isOpen } = useSidebar();
 
-  // ✅ Lazy init tasks from localStorage to avoid hydration issues
-  const [tasks, setTasks] = useState<Task[]>(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("taskboard_tasks");
-      return saved ? JSON.parse(saved) : [];
-    }
-    return [];
-  });
+  // Tasks are loaded from & persisted to localStorage through the sync store.
+  const [tasks, setTasks] = useSyncedCollection(taskStore);
 
   // Form states
   const [title, setTitle] = useState("");
@@ -40,23 +28,17 @@ export default function TaskBoard() {
     const [filterDate, setFilterDate] = useState("");
 
 
-  // Save tasks to localStorage
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      localStorage.setItem("taskboard_tasks", JSON.stringify(tasks));
-    }
-  }, [tasks]);
-
   // Add a new task
   const addTask = () => {
     if (!title || !description || !deadline) return;
     const newTask: Task = {
-      id: Date.now().toString(),
+      id: crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(),
       title,
       description,
       createdAt: new Date().toISOString(),
       deadline,
       status: "Backlog",
+      updatedAt: new Date().toISOString(),
     };
     setTasks(prev => [...prev, newTask]);
     setTitle(""); setDescription(""); setDeadline("");
@@ -69,6 +51,8 @@ export default function TaskBoard() {
 
     setTasks(prev => {
         const movedTask = prev.find(t => t.id === draggableId)!;
+        if (!movedTask) return prev;
+        const now = new Date().toISOString();
         const others = prev.filter(t => t.id !== draggableId);
 
         // Filter tasks that will remain in the destination column
@@ -78,7 +62,7 @@ export default function TaskBoard() {
         // Insert moved task at the correct index in that column
         const updatedColumn = [
         ...inColumn.slice(0, destination.index),
-        { ...movedTask, status: destination.droppableId as Task['status'] },
+        { ...movedTask, status: destination.droppableId as Task['status'], updatedAt: now },
         ...inColumn.slice(destination.index)
         ];
 
@@ -132,6 +116,10 @@ export default function TaskBoard() {
                 className="p-2 rounded bg-[#1a1a1a]/80"
                 />
             )}
+
+            <div className="ml-auto">
+              <SyncButton variant="compact" />
+            </div>
             </div>
 
           {/* Kanban Board */}

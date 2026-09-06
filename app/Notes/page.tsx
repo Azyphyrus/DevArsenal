@@ -3,28 +3,17 @@
 import Sidebar from "@/components/Sidebar"
 import Header from "@/components/Header"
 import { useSidebar } from "@/lib/SidebarContext"
-import { useState, useEffect } from "react"
-import Image from 'next/image'
-
-type NoteBlock = { type: 'text'; content: string } | { type: 'image'; src: string }
-
-interface Note {
-  id: string
-  title: string
-  blocks: NoteBlock[]
-}
+import { useState } from "react"
+import { noteStore } from "@/lib/localStorage"
+import { useSyncedCollection } from "@/lib/useSyncedState"
+import { Note, NoteBlock } from "@/lib/types"
+import SyncButton from "@/components/SyncButton"
 
 export default function Notepad_Gallery() {
 
   const { isOpen } = useSidebar()
 
-  const [notes, setNotes] = useState<Note[]>(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem("notes")
-      return saved ? JSON.parse(saved) : []
-    }
-    return []
-  })
+  const [notes, setNotes] = useSyncedCollection(noteStore)
 
   const [title, setTitle] = useState("")
   const [currentText, setCurrentText] = useState("")
@@ -32,21 +21,16 @@ export default function Notepad_Gallery() {
   const [showModal, setShowModal] = useState(false)
   const [selectedNote, setSelectedNote] = useState<Note | null>(null)
 
-  // Save notes on change
-  useEffect(() => {
-    localStorage.setItem("notes", JSON.stringify(notes))
-  }, [notes])
-
   const addTextBlock = () => {
     if (currentText.trim() === "") return
-    setBlocks([...blocks, { type: 'text', content: currentText }])
+    setBlocks([...blocks, { id: Date.now().toString(), type: 'text', content: currentText }])
     setCurrentText("")
   }
 
   const addImageBlock = (file: File) => {
     const reader = new FileReader()
     reader.onload = () => {
-      setBlocks([...blocks, { type: 'image', src: reader.result as string }])
+      setBlocks([...blocks, { id: Date.now().toString() + Math.random().toString(36).slice(2, 6), type: 'image', content: '', src: reader.result as string }])
     }
     reader.readAsDataURL(file)
   }
@@ -54,9 +38,10 @@ export default function Notepad_Gallery() {
   const addNote = () => {
     if (!title.trim() || blocks.length === 0) return
     const newNote: Note = {
-      id: Date.now().toString(),
+      id: crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(),
       title,
-      blocks
+      blocks,
+      updatedAt: new Date().toISOString(),
     }
     setNotes([newNote, ...notes])
     setTitle("")
@@ -89,7 +74,10 @@ export default function Notepad_Gallery() {
 
         <main className="p-8 space-y-6">
 
-          <h1 className="text-2xl font-bold">Notepad Gallery</h1>
+          <div className="flex items-center justify-between gap-4 flex-wrap">
+            <h1 className="text-2xl font-bold">Notepad Gallery</h1>
+            <SyncButton variant="compact" />
+          </div>
 
           {/* Add Note */}
           <div className="bg-[#111] border border-[#2a2a2a] rounded-lg p-6 space-y-3">
