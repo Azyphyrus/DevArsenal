@@ -10,6 +10,8 @@ import {
   resetSyncState,
   getDeviceName,
   getDeviceId,
+  startScheduler,
+  getLastSyncAt,
 } from "./syncManager";
 import type { SyncStatus } from "./types";
 
@@ -52,9 +54,9 @@ export function useSync(): { status: SyncStatus; syncNow: typeof syncNow } {
       .catch(() => {});
 
     const intervalAt = getSyncIntervalMs();
-    const interval = setInterval(() => {
+    const stopScheduler = startScheduler(intervalAt, () => {
       syncNow().catch(() => {});
-    }, intervalAt);
+    });
 
     const onVisibility = () => {
       if (!document.hidden) syncNow().catch(() => {});
@@ -62,14 +64,46 @@ export function useSync(): { status: SyncStatus; syncNow: typeof syncNow } {
     const onOnline = () => {
       syncNow().catch(() => {});
     };
+    const onFocus = () => {
+      syncNow().catch(() => {});
+    };
+    // Background tabs get their intervals throttled or frozen by the browser;
+    // focusing the window is the reliable moment to catch up, so a device that
+    // was left in the background syncs immediately when the user returns.
+    //
+    // Additionally, a device that's been idle (no sync) for a while should
+    // re-sync when the user clearly returns to the machine — mousemove/keydown
+    // after inactivity is a strong signal the tab is live again.
+    let idleTimer: ReturnType<typeof setTimeout> | null = null;
+    const onActivity = () => {
+      if (idleTimer) return; // already armed
+      idleTimer = setTimeout(() => {
+        idleTimer = null;
+      }, intervalAt * 2);
+      // Only sync if we're actually stale — avoids a tight loop of syncs.
+      const last = getLastSyncAt();
+      const lastMs = last ? new Date(last).getTime() : 0;
+      if (Date.now() - lastMs > intervalAt) {
+        syncNow().catch(() => {});
+      }
+    };
 
     document.addEventListener("visibilitychange", onVisibility);
     window.addEventListener("online", onOnline);
+    window.addEventListener("focus", onFocus);
+    window.addEventListener("pageshow", onFocus);
+    document.addEventListener("mousemove", onActivity, { passive: true });
+    document.addEventListener("keydown", onActivity, { passive: true });
 
     return () => {
-      clearInterval(interval);
+      stopScheduler();
+      if (idleTimer) clearTimeout(idleTimer);
       document.removeEventListener("visibilitychange", onVisibility);
       window.removeEventListener("online", onOnline);
+      window.removeEventListener("focus", onFocus);
+      window.removeEventListener("pageshow", onFocus);
+      document.removeEventListener("mousemove", onActivity);
+      document.removeEventListener("keydown", onActivity);
       resetSyncState();
     };
   }, [userId, loading]);

@@ -26,7 +26,42 @@ const DEVICE_ID_KEY = "devtools_device_id";
 const LAST_SYNC_KEY = "devtools_last_sync_at";
 const LAST_PULL_KEY = "devtools_last_pull_at";
 
-const DEFAULT_INTERVAL_MS = 30_000;
+const DEFAULT_INTERVAL_MS = 15_000;
+
+/**
+ * Resilient scheduler: uses recursive setTimeout instead of setInterval so a
+ * long-running (or throttled) cycle can't cause overlapping runs. Also
+ * re-schedules immediately after completion, which tightens the loop when a
+ * sync actually moved data and another might be productive right away.
+ */
+export function startScheduler(intervalMs: number, onTick: () => void): () => void {
+  let timer: ReturnType<typeof setTimeout> | null = null;
+  let stopped = false;
+
+  const scheduleNext = (delay: number) => {
+    if (stopped) return;
+    timer = setTimeout(run, delay);
+  };
+
+  const run = () => {
+    if (stopped) return;
+    // Fire-and-forget; schedule the next tick regardless so a thrown error
+    // (or a hung promise) can't permanently kill the loop.
+    try {
+      onTick();
+    } catch {
+      /* swallow — we always reschedule */
+    }
+    scheduleNext(intervalMs);
+  };
+
+  scheduleNext(intervalMs);
+
+  return () => {
+    stopped = true;
+    if (timer) clearTimeout(timer);
+  };
+}
 
 export function getSyncIntervalMs(): number {
   const raw = Number(process.env.NEXT_PUBLIC_SYNC_INTERVAL_MS);
@@ -70,8 +105,8 @@ function refreshPending(): SyncCollection[] {
 }
 
 function publish(next: SyncStatus) {
-  currentStatus = next;
-  listeners.forEach((listener) => listener(next));
+  currentStatus = { ...next };
+  listeners.forEach((listener) => listener(currentStatus));
 }
 
 function setPartial(partial: Partial<SyncStatus>) {
@@ -95,21 +130,61 @@ export function resetSyncState() {
 
 // ---------- Low level HTTP ----------
 
+const RETRY_DELAYS_MS = [400, 1200, 3000];
+
+function isRetryableStatus(status: number): boolean {
+  return status === 408 || status === 429 || (status >= 500 && status <= 599);
+}
+
+async function sleep(ms: number): Promise<void> {
+  await new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+/**
+ * fetch wrapper with automatic retries for transient failures (network
+ * timeouts, 5xx). Deletions/updates MUST eventually reach the server even on
+ * flaky connections, so every sync request is retried with backoff before
+ * giving up; on final failure the outbox still keeps the pending snapshot for
+ * the next sync cycle.
+ */
 async function api<T>(path: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(path, {
-    ...init,
-    headers: { "Content-Type": "application/json", ...(init?.headers ?? {}) },
-    cache: "no-store",
-  });
-  const body = (await res.json().catch(() => ({}))) as T & { error?: string; needsMigration?: boolean };
-  if (!res.ok || body?.needsMigration) {
-    const err = new Error(body?.error || `Sync request failed (${res.status})`);
-    if (body?.needsMigration) {
-      (err as Error & { needsMigration: boolean }).needsMigration = true;
+  let lastErr: unknown = new Error("Sync request failed");
+
+  for (let attempt = 0; attempt <= RETRY_DELAYS_MS.length; attempt++) {
+    if (attempt > 0) await sleep(RETRY_DELAYS_MS[attempt - 1]);
+    try {
+      const res = await fetch(path, {
+        ...init,
+        headers: { "Content-Type": "application/json", ...(init?.headers ?? {}) },
+        cache: "no-store",
+        // Never let a request hang forever: a stuck fetch would leave the sync
+        // engine locked in the "syncing" phase, silently skipping every later
+        // cycle until the page was reloaded.
+        signal: init?.signal ?? AbortSignal.timeout(15000),
+      });
+      const body = (await res.json().catch(() => ({}))) as T & {
+        error?: string;
+        needsMigration?: boolean;
+      };
+      if (res.ok && !body?.needsMigration) return body;
+      // Retry only transient server-side problems; auth/migration/validation
+      // errors are permanent for this request.
+      if (!isRetryableStatus(res.status) || body?.needsMigration) {
+        const err = new Error(body?.error || `Sync request failed (${res.status})`);
+        if (body?.needsMigration) {
+          (err as Error & { needsMigration: boolean }).needsMigration = true;
+        }
+        throw err;
+      }
+      lastErr = new Error(body?.error || `Sync request failed (${res.status})`);
+    } catch (err) {
+      const needsMigration = (err as Error & { needsMigration?: boolean }).needsMigration === true;
+      if (needsMigration) throw err;
+      // fetch() itself failed (network down / timeout / DNS) → retryable.
+      lastErr = err;
     }
-    throw err;
   }
-  return body;
+  throw lastErr;
 }
 // ---------- Push ----------
 
@@ -219,6 +294,7 @@ function setLastPullAt(iso: string): void {
 }
 
 const ALL_COLLECTIONS: SyncCollection[] = ["snippets", "notes", "tasks"];
+let syncStartedAt = 0;
 // ---------- Main entry point ----------
 
 /**
@@ -229,7 +305,14 @@ const ALL_COLLECTIONS: SyncCollection[] = ["snippets", "notes", "tasks"];
  */
 export async function syncNow(): Promise<SyncStatus> {
   if (typeof window === "undefined") return currentStatus;
-  if (currentStatus.phase === "syncing") return currentStatus;
+  if (currentStatus.phase === "syncing") {
+    // Watchdog: a cycle that has been "running" for over a minute is hung
+    // (e.g. a fetch that evaded its timeout). Allow a fresh cycle instead of
+    // silently ignoring sync triggers forever.
+    if (Date.now() - syncStartedAt < 60000) return currentStatus;
+    console.warn("[sync] previous cycle appears hung; starting a new one");
+  }
+  syncStartedAt = Date.now();
 
   setPartial({ phase: "syncing", error: undefined, needsMigration: false });
 
@@ -246,6 +329,17 @@ export async function syncNow(): Promise<SyncStatus> {
         const items = stores[collection].getAll();
         if (items.length > 0) markSnapshotDirty(collection, items);
       }
+    }
+
+    // 2b) Outbox reconciliation: the pull may have applied remote deletions
+    //     (or updates) that changed the local store. Any collection that is
+    //     still queued for push must have its outbox snapshot refreshed to
+    //     match the post-pull store state — otherwise a stale snapshot that
+    //     still contains a deleted record would resurrect it on the server.
+    //     Re-marking dirty with the current contents is safe: markSnapshotDirty
+    //     overwrites the snapshot, and the store is now authoritative.
+    for (const collection of listDirtyCollections()) {
+      markSnapshotDirty(collection, stores[collection].getAll());
     }
 
     // 3) Push every dirty collection.

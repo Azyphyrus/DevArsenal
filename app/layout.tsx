@@ -4,6 +4,7 @@ import "./globals.css";
 import { SidebarProvider } from "@/lib/SidebarContext";
 import { AuthProvider } from "@/lib/AuthContext";
 import SyncInitializer from "@/components/SyncInitializer";
+import SyncBanner from "@/components/SyncBanner";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -33,6 +34,7 @@ export default function RootLayout({
       >
         <AuthProvider>
           <SyncInitializer>
+            <SyncBanner />
             <SidebarProvider>
               {children}
             </SidebarProvider>

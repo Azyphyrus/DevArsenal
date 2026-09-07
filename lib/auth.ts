@@ -32,7 +32,12 @@ export async function createSession(payload: SessionPayload) {
 
 export async function verifySession(token: string): Promise<SessionPayload | null> {
   try {
-    const { payload } = await jwtVerify(token, SESSION_SECRET);
+    const { payload } = await jwtVerify(token, SESSION_SECRET, {
+      // Tolerate up to 60s of clock skew between the signing environment and
+      // this server. Without this, a token signed by a machine whose clock is
+      // slightly ahead is rejected as "not yet valid" (in the future).
+      clockTolerance: 60,
+    });
     return payload as unknown as SessionPayload;
   } catch {
     return null;

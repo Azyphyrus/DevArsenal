@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useState } from "react";
 import { useSyncStatus } from "@/lib/useSync";
 import { syncNow } from "@/lib/syncManager";
 import { useAuth } from "@/lib/AuthContext";
@@ -17,6 +18,23 @@ import {
 const SyncIndicator = () => {
   const status = useSyncStatus();
   const { user } = useAuth();
+  // Tick every 30s so staleness (which depends on the current time) re-evaluates.
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const interval = setInterval(() => setNow(Date.now()), 30000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Stale detection: if the last successful sync was longer ago than ~2
+  // intervals, background-tab throttling has probably stalled us. Surface
+  // that as a distinct "needs attention" state so the user knows to sync.
+  const STALE_MS = 70000;
+  const lastSyncMs = status.lastSyncAt ? new Date(status.lastSyncAt).getTime() : 0;
+  const isStale =
+    !!user &&
+    status.phase !== "syncing" &&
+    now - lastSyncMs > STALE_MS &&
+    !status.needsMigration;
 
   let label = "Sync idle";
   let color = "text-[#8a8a8a]";
@@ -40,7 +58,13 @@ const SyncIndicator = () => {
     color = "text-red-400";
     bg = "bg-[#3a1f1f] border-[#6b1c1c]";
     Icon = RiErrorWarningFill;
-  } else if (status.phase === "success" && status.lastSyncAt) {
+  } else if (isStale) {
+    label = "Sync stale — click to refresh";
+    color = "text-[#ffd166]";
+    bg = "bg-[#3a2f1f] border-[#6b521c]";
+    Icon = RiRefreshLine;
+    spin = false;
+  } else if (status.lastSyncAt) {
     label = `Synced ${new Date(status.lastSyncAt).toLocaleTimeString()}`;
     color = "text-[#00ff88]";
     bg = "bg-[#1f3a2a] border-[#0e4a2a]";

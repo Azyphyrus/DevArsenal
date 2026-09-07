@@ -20,7 +20,17 @@ export async function GET() {
 
     return NextResponse.json({ user: user ?? null });
   } catch (err) {
-    console.error('Failed to load user profile', err);
-    return NextResponse.json({ user: null, error: 'profile_unavailable' }, { status: 200 });
+    // The DB lookup failed (timeout, network). The JWT is still valid, so
+    // return the session data we already trust instead of dropping the user
+    // to null — otherwise the UI would flash "signed out" intermittently.
+    console.error('Failed to load user profile, falling back to session', err);
+    return NextResponse.json({
+      user: {
+        id: session.userId,
+        email: session.email,
+        name: null,
+        avatar_url: null,
+      },
+    });
   }
 }

@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { SyncEntity } from "./types";
 import type { CollectionStore } from "./localStorage";
+import { getSyncChannel } from "./localStorage";
 
 /**
  * Drop-in replacement for `useState<T[]>` that is bound to a collection store.
@@ -24,7 +25,7 @@ export function useSyncedCollection<T extends SyncEntity>(
   });
 
   // Refresh the UI whenever the sync engine applies server state locally
-  // (same tab or another tab via the shared localStorage).
+  // (same tab via the window event, other tabs via BroadcastChannel).
   useEffect(() => {
     const onSyncApplied = (e: Event) => {
       const detail = (e as CustomEvent<{ collection?: string }>).detail;
@@ -34,6 +35,18 @@ export function useSyncedCollection<T extends SyncEntity>(
     };
     window.addEventListener("devtools:sync:applied", onSyncApplied);
     return () => window.removeEventListener("devtools:sync:applied", onSyncApplied);
+  }, []);
+
+  useEffect(() => {
+    const channel = getSyncChannel();
+    if (!channel) return;
+    const onMessage = (e: MessageEvent<{ collection?: string }>) => {
+      if (!e.data?.collection) return;
+      if (e.data.collection !== storeRef.current.collection) return;
+      setItems(storeRef.current.getAll());
+    };
+    channel.addEventListener("message", onMessage);
+    return () => channel.removeEventListener("message", onMessage);
   }, []);
 
   const setItemsPersisted = useCallback(

@@ -154,6 +154,20 @@ export function isValidTask(v: unknown): v is Task {
     isOptionalString(t.deletedAt)
   );
 }
+// ---------- Cross-tab notifications ----------
+let syncChannel: BroadcastChannel | null = null;
+
+/**
+ * Shared BroadcastChannel used to notify every open tab of the same browser
+ * when synced data changes. `window` events never cross tabs, so without this
+ * a second tab would keep showing stale data until its own sync cycle ran.
+ */
+export function getSyncChannel(): BroadcastChannel | null {
+  if (!isBrowser() || typeof BroadcastChannel === "undefined") return null;
+  if (!syncChannel) syncChannel = new BroadcastChannel("devtools-sync");
+  return syncChannel;
+}
+
 // ---------- Sync outbox (dirty snapshots) ----------
 
 export function readOutbox(): Partial<Record<SyncCollection, SyncSnapshot>> {
@@ -315,6 +329,8 @@ function createStore<T extends SyncEntity>(
         window.dispatchEvent(
           new CustomEvent("devtools:sync:applied", { detail: { collection } })
         );
+        // Same browser, other tabs (window events do not cross tabs).
+        getSyncChannel()?.postMessage({ collection });
       }
       return merged;
     },

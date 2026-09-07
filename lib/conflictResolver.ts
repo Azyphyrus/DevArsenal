@@ -8,7 +8,16 @@ import type { SyncEntity } from "./types";
  *   local copy's `updatedAt` is strictly newer (that device "wins").
  * - A live remote record replaces the local one when its `updatedAt` is equal
  *   or newer. Local-only records are kept untouched.
+ *
+ * Timestamps are compared as instants (Date.parse), NOT as strings: the server
+ * emits `+00:00` offsets while the client emits `Z`, and lexicographic order
+ * differs between those suffixes — string comparison would misresolve ties.
  */
+function toTime(iso: string): number {
+  const t = Date.parse(iso);
+  return Number.isFinite(t) ? t : 0;
+}
+
 export function mergeRemoteLocal<T extends SyncEntity>(local: T[], remote: T[]): T[] {
   const byId = new Map<string, T>();
   for (const item of local) byId.set(item.id, item);
@@ -17,12 +26,12 @@ export function mergeRemoteLocal<T extends SyncEntity>(local: T[], remote: T[]):
     const localItem = byId.get(remoteItem.id);
     if (remoteItem.deletedAt) {
       // Tombstone: drop the local copy unless the local copy is strictly newer.
-      if (!localItem || localItem.updatedAt < remoteItem.updatedAt) {
+      if (!localItem || toTime(localItem.updatedAt) < toTime(remoteItem.updatedAt)) {
         byId.delete(remoteItem.id);
       }
     } else {
       // LWW: server wins ties and anything equal-or-newer.
-      if (!localItem || remoteItem.updatedAt >= localItem.updatedAt) {
+      if (!localItem || toTime(remoteItem.updatedAt) >= toTime(localItem.updatedAt)) {
         byId.set(remoteItem.id, remoteItem);
       }
     }
